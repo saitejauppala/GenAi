@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import { frontendOrigin } from './config';
 import authRoutes from './routes/authRoutes';
 import adminRoutes from './routes/adminRoutes';
 import projectRoutes from './routes/projectRoutes';
@@ -12,9 +13,26 @@ import profileRoutes from './routes/profileRoutes';
 import filesRoutes from './routes/filesRoutes';
 
 const app = express();
+app.set('trust proxy', 1);
 
 app.use(helmet());
-app.use(cors({ origin: true }));
+const allowedOrigins = frontendOrigin
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error('Origin not allowed by CORS'));
+    },
+    credentials: true
+  })
+);
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('combined'));
 

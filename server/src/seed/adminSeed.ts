@@ -9,15 +9,16 @@ const MONGO = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/devai_pro';
 
 async function seed(){
   await mongoose.connect(MONGO);
-  const existing = await User.findOne({ email: adminEmail });
+  const email = adminEmail.trim().toLowerCase();
+  const existing = await User.findOne({ email });
   if (existing) {
     console.log('Super admin already exists');
     process.exit(0);
   }
   const hash = await bcrypt.hash(adminPassword, 10);
-  const user = new User({ email: adminEmail, password: hash, role: 'superadmin', plan: 'premium' });
+  const user = new User({ email, password: hash, role: 'superadmin', plan: 'premium' });
   await user.save();
-  console.log('Super admin created:', adminEmail);
+  console.log('Super admin created:', email);
   process.exit(0);
 }
 

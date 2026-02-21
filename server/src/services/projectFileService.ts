@@ -1,13 +1,14 @@
 import { createWriteStream, promises as fs } from 'fs';
 import os from 'os';
 import path from 'path';
+import { projectsRootDir } from '../config';
 import { logger } from '../utils/logger';
 
 // Use require to avoid strict type dependency issues in current TS config.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const archiver = require('archiver');
 
-const PROJECTS_ROOT = path.resolve(process.cwd(), 'projects');
+const PROJECTS_ROOT = path.resolve(projectsRootDir);
 
 function sanitizeSegment(input: string): string {
   const value = input.trim().toLowerCase();

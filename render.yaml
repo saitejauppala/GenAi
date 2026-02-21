@@ -1,0 +1,76 @@
+services:
+  - type: web
+    name: devai-pro-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /health
+    buildFilter:
+      paths:
+        - server/**
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SUPER_ADMIN_EMAIL
+        sync: false
+      - key: SUPER_ADMIN_PASSWORD
+        sync: false
+      - key: SYNC_SUPER_ADMIN_PASSWORD
+        value: "true"
+      - key: OLLAMA_API_URL
+        sync: false
+      - key: OLLAMA_MODEL
+        value: llama3.2
+      - key: MAX_PROMPT_CHARS
+        value: "12000"
+      - key: FREE_DAILY_LIMIT
+        value: "50"
+      - key: FRONTEND_ORIGIN
+        fromService:
+          type: web
+          name: devai-pro-web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: PROJECTS_ROOT_DIR
+        value: /tmp/devai-projects
+      - key: OLLAMA_TIMEOUT_MS
+        value: "120000"
+      - key: OLLAMA_HEALTH_TIMEOUT_MS
+        value: "10000"
+      - key: STRIPE_SECRET
+        sync: false
+      - key: STRIPE_SUCCESS_URL
+        sync: false
+      - key: STRIPE_CANCEL_URL
+        sync: false
+      - key: STRIPE_RETURN_URL
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+
+  - type: web
+    name: devai-pro-web
+    runtime: static
+    rootDir: client
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    buildFilter:
+      paths:
+        - client/**
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: devai-pro-api
+          envVarKey: RENDER_EXTERNAL_URL
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
