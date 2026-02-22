@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
-import ChatSidebar from '../components/workspace/ChatSidebar';
 import ChatWorkspace from '../components/workspace/ChatWorkspace';
 import { parseGeneratedArtifacts } from '../lib/aiFormatting';
 
@@ -39,7 +38,6 @@ export default function AIChatPage() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<WorkspaceMessage[]>([]);
   const [prompt, setPrompt] = useState('');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [recentChats, setRecentChats] = useState<RecentChat[]>([]);
   const [sending, setSending] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -238,15 +236,6 @@ export default function AIChatPage() {
   return (
     <div className="workspace-shell">
       <div className="workspace-gem-layout">
-        <ChatSidebar
-          isCollapsed={sidebarCollapsed}
-          isAuthenticated={isAuthenticated}
-          recentChats={recentChats}
-          onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
-          onStartNewChat={startNewChat}
-          onOpenChat={openChat}
-        />
-
         <ChatWorkspace
           messages={messages}
           prompt={prompt}
@@ -254,6 +243,10 @@ export default function AIChatPage() {
           healthStatus={health.status}
           healthMessage={health.message}
           isAuthenticated={isAuthenticated && !checkingAuth}
+          recentChats={recentChats}
+          activeChatId={activeChatId}
+          onStartNewChat={startNewChat}
+          onOpenChat={openChat}
           onPromptChange={setPrompt}
           onSendPrompt={sendPrompt}
           onCopyMessage={(message) => copyText(message.content)}
