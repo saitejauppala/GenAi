@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://devai-pro-web.onrender.com/sitemap-public.xml</loc>
+    <lastmod>2026-02-22</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://devai-pro-web.onrender.com/sitemap-auth.xml</loc>
+    <lastmod>2026-02-22</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://devai-pro-web.onrender.com/sitemap-app.xml</loc>
+    <lastmod>2026-02-22</lastmod>
+  </sitemap>
+</sitemapindex>
