@@ -15,6 +15,14 @@ function normalizeEmail(input: unknown) {
   return String(input || '').trim().toLowerCase();
 }
 
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function emailMatcher(email: string) {
+  return new RegExp(`^${escapeRegex(email)}$`, 'i');
+}
+
 function hashResetToken(token: string) {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
@@ -24,7 +32,7 @@ export async function register(req: Request, res: Response){
   const password = String(req.body?.password || '');
   const name = String(req.body?.name || '').trim();
   if (!email || !password) return res.status(400).json({ message: 'Missing fields' });
-  const existing = await User.findOne({ email });
+  const existing = await User.findOne({ email: emailMatcher(email) });
   if (existing) return res.status(400).json({ message: 'User exists' });
   const hash = await bcrypt.hash(password, 10);
   const user = new User({ email, password: hash, name: name || undefined });
@@ -35,7 +43,7 @@ export async function register(req: Request, res: Response){
 export async function login(req: Request, res: Response){
   const email = normalizeEmail(req.body?.email);
   const password = String(req.body?.password || '');
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: emailMatcher(email) });
   if (!user) return res.status(400).json({ message: 'Invalid credentials' });
   const ok = await bcrypt.compare(password, user.password);
   if (!ok) return res.status(400).json({ message: 'Invalid credentials' });
@@ -56,7 +64,7 @@ export async function forgotPassword(req: Request, res: Response) {
 
   const defaultMessage =
     'If this email is registered, a reset link has been generated.';
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: emailMatcher(email) });
 
   if (!user) {
     return res.json({ message: defaultMessage });
