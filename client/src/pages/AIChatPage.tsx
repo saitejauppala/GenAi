@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../api';
 import ChatSidebar from '../components/workspace/ChatSidebar';
 import ChatWorkspace from '../components/workspace/ChatWorkspace';
-import ProjectFilePanel from '../components/workspace/ProjectFilePanel';
-import { GeneratedArtifact, parseGeneratedArtifacts } from '../lib/aiFormatting';
+import { parseGeneratedArtifacts } from '../lib/aiFormatting';
 
 type WorkspaceMessage = {
   id: string;
@@ -29,41 +28,19 @@ function guestPreview(prompt: string) {
   return [
     `Starter plan for "${text.slice(0, 60)}":`,
     '- Clarify user flow and core feature list.',
-    '- Ask AI for API contracts, pages, and components.',
-    '- Request generated files with markers: ---FILE: filename.ext---',
-    '- Iterate each file with focused follow-up prompts.',
+    '- Ask AI for backend and frontend implementation steps.',
+    '- Request code in fenced blocks or FILE markers.',
     '',
-    'Login to access full AI generation.'
+    'Login to access full generation.'
   ].join('\n');
-}
-
-function mergeArtifacts(existing: GeneratedArtifact[], incoming: GeneratedArtifact[]) {
-  const map = new Map<string, GeneratedArtifact>();
-  [...incoming, ...existing].forEach((artifact) => {
-    const key = `${artifact.fileName}-${artifact.sourceMessageId}`;
-    if (!map.has(key)) map.set(key, artifact);
-  });
-  return Array.from(map.values());
-}
-
-function extractArtifactsFromMessages(messages: Array<{ role: string; content: string; id: string }>) {
-  let artifacts: GeneratedArtifact[] = [];
-  messages.forEach((message) => {
-    if (message.role !== 'assistant') return;
-    const parsed = parseGeneratedArtifacts(message.content, message.id);
-    artifacts = mergeArtifacts(artifacts, parsed.artifacts);
-  });
-  return artifacts;
 }
 
 export default function AIChatPage() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<WorkspaceMessage[]>([]);
   const [prompt, setPrompt] = useState('');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [filesPanelOpen, setFilesPanelOpen] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [recentChats, setRecentChats] = useState<RecentChat[]>([]);
-  const [recentSearch, setRecentSearch] = useState('');
   const [sending, setSending] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(Boolean(localStorage.getItem('token')));
@@ -72,13 +49,6 @@ export default function AIChatPage() {
     checkedAt: null,
     message: 'Checking AI health...'
   });
-  const [artifacts, setArtifacts] = useState<GeneratedArtifact[]>([]);
-  const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
-
-  const selectedArtifact = useMemo(
-    () => artifacts.find((artifact) => artifact.id === selectedArtifactId) || null,
-    [artifacts, selectedArtifactId]
-  );
 
   useEffect(() => {
     if (!messages.length) {
@@ -87,7 +57,7 @@ export default function AIChatPage() {
           id: 'welcome',
           role: 'assistant',
           content:
-            'Welcome to DevAI Workspace.\nDescribe your app idea and I will generate structured files and code blocks.'
+            'Welcome to DevAI.\nDescribe what you want to build and I will generate the implementation response.'
         }
       ]);
     }
@@ -153,9 +123,9 @@ export default function AIChatPage() {
     };
   }, []);
 
-  async function refreshRecentChats(search = '') {
+  async function refreshRecentChats() {
     if (!isAuthenticated) return;
-    const { data } = await api.get('/api/ai/chats', { params: { search } });
+    const { data } = await api.get('/api/ai/chats');
     setRecentChats(data || []);
   }
 
@@ -165,18 +135,13 @@ export default function AIChatPage() {
     const parsedMessages: WorkspaceMessage[] = (data?.messages || []).map((item: any, index: number) => ({
       id: `${chatId}-${index}`,
       role: item.role,
-      content: String(item.content || ''),
-      meta: undefined
+      content: String(item.content || '')
     }));
 
     const fallback = [{ id: 'empty-chat', role: 'assistant' as const, content: 'No messages yet.' }];
     const nextMessages = parsedMessages.length ? parsedMessages : fallback;
     setMessages(nextMessages);
     setActiveChatId(data?._id || chatId);
-
-    const artifactsFromChat = extractArtifactsFromMessages(nextMessages.map((m) => ({ ...m })));
-    setArtifacts(artifactsFromChat);
-    setSelectedArtifactId(artifactsFromChat[0]?.id || null);
   }
 
   function startNewChat() {
@@ -185,11 +150,9 @@ export default function AIChatPage() {
       {
         id: `new-chat-${Date.now()}`,
         role: 'assistant',
-        content: 'New chat started. Ask for full-stack files with clear requirements.'
+        content: 'New chat started. Describe the app or feature you need.'
       }
     ]);
-    setArtifacts([]);
-    setSelectedArtifactId(null);
   }
 
   async function copyText(value: string) {
@@ -210,15 +173,10 @@ export default function AIChatPage() {
     if (!isAuthenticated) {
       const guestId = `g-${Date.now()}`;
       const preview = guestPreview(input);
-      const parsed = parseGeneratedArtifacts(preview, guestId);
       setMessages((prev) => [
         ...prev,
-        { id: guestId, role: 'assistant', content: parsed.displayText, meta: 'Guest preview' }
+        { id: guestId, role: 'assistant', content: preview, meta: 'Guest preview' }
       ]);
-      if (parsed.artifacts.length) {
-        setArtifacts((prev) => mergeArtifacts(prev, parsed.artifacts));
-        setSelectedArtifactId(parsed.artifacts[0].id);
-      }
       return;
     }
 
@@ -245,16 +203,16 @@ export default function AIChatPage() {
       const assistantId = `a-${Date.now()}`;
       const rawText = String(data?.text || 'No response received.');
       const parsed = parseGeneratedArtifacts(rawText, assistantId);
+      const typedText = parsed.displayText || rawText;
 
       setMessages((prev) => [...prev, { id: assistantId, role: 'assistant', content: '', meta: '' }]);
 
-      const typedText = parsed.displayText || rawText;
       for (let i = 1; i <= typedText.length; i += 6) {
         const chunk = typedText.slice(0, i);
         setMessages((prev) =>
           prev.map((item) =>
             item.id === assistantId
-              ? { ...item, content: chunk, meta: `${data?.model || 'ollama'} • ${data?.tokensUsed || 0} tokens` }
+              ? { ...item, content: chunk, meta: `${data?.model || 'ollama'} | ${data?.tokensUsed || 0} tokens` }
               : item
           )
         );
@@ -262,12 +220,7 @@ export default function AIChatPage() {
       }
 
       setActiveChatId(data.chatId || null);
-      await refreshRecentChats(recentSearch);
-
-      if (parsed.artifacts.length) {
-        setArtifacts((prev) => mergeArtifacts(prev, parsed.artifacts));
-        setSelectedArtifactId(parsed.artifacts[0].id);
-      }
+      await refreshRecentChats();
     } catch (err: any) {
       setMessages((prev) => [
         ...prev,
@@ -283,42 +236,27 @@ export default function AIChatPage() {
   }
 
   return (
-    <div className="workspace-root page-wrap">
-      <div className="page-container workspace-ide-layout">
+    <div className="workspace-shell">
+      <div className="workspace-gem-layout">
         <ChatSidebar
           isCollapsed={sidebarCollapsed}
           isAuthenticated={isAuthenticated}
           recentChats={recentChats}
-          recentSearch={recentSearch}
           onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
           onStartNewChat={startNewChat}
-          onRecentSearchChange={async (value) => {
-            setRecentSearch(value);
-            await refreshRecentChats(value);
-          }}
           onOpenChat={openChat}
         />
 
         <ChatWorkspace
-          filesPanelOpen={filesPanelOpen}
           messages={messages}
           prompt={prompt}
           sending={sending}
           healthStatus={health.status}
           healthMessage={health.message}
           isAuthenticated={isAuthenticated && !checkingAuth}
-          onToggleFilesPanel={() => setFilesPanelOpen((prev) => !prev)}
           onPromptChange={setPrompt}
           onSendPrompt={sendPrompt}
           onCopyMessage={(message) => copyText(message.content)}
-        />
-
-        <ProjectFilePanel
-          isOpen={filesPanelOpen}
-          artifacts={artifacts}
-          selectedArtifactId={selectedArtifactId || selectedArtifact?.id || null}
-          onSelectArtifact={setSelectedArtifactId}
-          onCopyArtifact={(artifact) => copyText(artifact.content)}
         />
       </div>
     </div>

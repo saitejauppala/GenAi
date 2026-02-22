@@ -618,6 +618,378 @@ body {
   }
 }
 
+@layer components {
+  .workspace-shell {
+    height: 100vh;
+    overflow: hidden;
+    padding: 10px;
+  }
+
+  .workspace-gem-layout {
+    height: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    overflow: hidden;
+  }
+
+  .workspace-gem-sidebar {
+    width: 282px;
+    min-width: 282px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1px solid var(--stroke);
+    border-radius: 22px;
+    background: var(--surface);
+    box-shadow: var(--shadow-soft);
+    padding: 12px;
+    overflow: hidden;
+  }
+
+  .workspace-gem-sidebar.collapsed {
+    width: 72px;
+    min-width: 72px;
+    align-items: center;
+  }
+
+  .workspace-gem-sidebar-top {
+    display: grid;
+    gap: 8px;
+  }
+
+  .workspace-rail-btn {
+    width: 100%;
+    height: 38px;
+    border-radius: 11px;
+    border: 1px solid var(--stroke);
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--primary-strong);
+    font-weight: 600;
+    transition: all 0.18s ease;
+  }
+
+  .workspace-rail-btn:hover {
+    border-color: rgba(51, 100, 255, 0.45);
+    background: rgba(255, 255, 255, 0.96);
+  }
+
+  .workspace-gem-sidebar-brand {
+    padding: 4px 2px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .workspace-gem-sidebar-body {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+  }
+
+  .workspace-sidebar-heading {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .workspace-gem-recent-list {
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 3px;
+  }
+
+  .workspace-gem-recent-item {
+    width: 100%;
+    border: 1px solid var(--stroke);
+    border-radius: 12px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.76);
+    color: var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+    transition: transform 0.16s ease, border-color 0.16s ease;
+  }
+
+  .workspace-gem-recent-item small {
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+  }
+
+  .workspace-gem-recent-item:hover {
+    transform: translateY(-1px);
+    border-color: rgba(51, 100, 255, 0.38);
+  }
+
+  .workspace-gem-main {
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid var(--stroke);
+    border-radius: 24px;
+    background: var(--surface);
+    box-shadow: var(--shadow-soft);
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+  }
+
+  .workspace-gem-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 18px 10px;
+    position: relative;
+  }
+
+  .workspace-gem-header h2 {
+    margin: 0;
+    font-size: 1.7rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .workspace-gem-header-right {
+    position: absolute;
+    right: 18px;
+    top: 14px;
+  }
+
+  .workspace-gem-thread {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 6px 0 14px;
+  }
+
+  .workspace-gem-thread-inner {
+    width: min(920px, 100%);
+    margin: 0 auto;
+    padding: 0 20px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .workspace-gem-message {
+    width: 100%;
+  }
+
+  .workspace-gem-message-body {
+    display: flex;
+    gap: 12px;
+  }
+
+  .workspace-gem-message-content {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .workspace-gem-message-user .workspace-gem-message-body {
+    justify-content: flex-end;
+  }
+
+  .workspace-gem-message-user .workspace-gem-message-content {
+    flex: 0 1 auto;
+    max-width: 74%;
+    border-radius: 20px;
+    border: 1px solid var(--stroke);
+    background: #ebeff8;
+    padding: 14px 16px;
+  }
+
+  [data-theme='dark'] .workspace-gem-message-user .workspace-gem-message-content {
+    background: rgba(33, 49, 84, 0.95);
+  }
+
+  .workspace-gem-message-assistant .workspace-gem-message-content {
+    max-width: 860px;
+  }
+
+  .workspace-gem-assistant-mark {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: 1px solid rgba(51, 100, 255, 0.35);
+    color: var(--primary);
+    display: grid;
+    place-items: center;
+    font-size: 0.9rem;
+    margin-top: 2px;
+  }
+
+  .workspace-gem-composer {
+    border-top: 1px solid var(--stroke);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.56) 0%, rgba(255, 255, 255, 0.96) 32%),
+      var(--surface-strong);
+    padding: 12px 16px 14px;
+  }
+
+  [data-theme='dark'] .workspace-gem-composer {
+    background:
+      linear-gradient(180deg, rgba(13, 22, 42, 0.56) 0%, rgba(13, 22, 42, 0.95) 32%),
+      var(--surface-strong);
+  }
+
+  .workspace-gem-input-shell {
+    width: min(920px, 100%);
+    margin: 0 auto;
+    border: 1px solid var(--stroke);
+    border-radius: 26px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 12px 14px 10px;
+    box-shadow: 0 10px 24px -18px rgba(42, 64, 128, 0.38);
+  }
+
+  [data-theme='dark'] .workspace-gem-input-shell {
+    background: rgba(14, 23, 44, 0.95);
+  }
+
+  .workspace-gem-textarea {
+    width: 100%;
+    resize: none;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    min-height: 68px;
+    max-height: 200px;
+    outline: none;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .workspace-gem-textarea::placeholder {
+    color: #93a0be;
+  }
+
+  .workspace-gem-input-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-top: 1px solid var(--stroke);
+    padding-top: 9px;
+  }
+
+  .workspace-gem-tools {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+  }
+
+  .workspace-health-chip {
+    border: 1px solid var(--stroke);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: rgba(255, 255, 255, 0.72);
+  }
+
+  .workspace-health-chip.online {
+    color: #008257;
+    border-color: rgba(0, 130, 87, 0.25);
+  }
+
+  .workspace-health-chip.offline {
+    color: #d1002f;
+    border-color: rgba(209, 0, 47, 0.25);
+  }
+
+  .workspace-health-chip.unknown {
+    color: #8b6900;
+    border-color: rgba(139, 105, 0, 0.28);
+  }
+
+  @media (max-width: 1024px) {
+    .workspace-shell {
+      padding: 8px;
+    }
+
+    .workspace-gem-layout {
+      grid-template-columns: 72px minmax(0, 1fr);
+    }
+
+    .workspace-gem-sidebar {
+      width: 72px;
+      min-width: 72px;
+      align-items: center;
+    }
+
+    .workspace-gem-sidebar-body,
+    .workspace-gem-sidebar-brand {
+      display: none;
+    }
+
+    .workspace-gem-thread-inner {
+      padding: 0 12px 8px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .workspace-gem-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .workspace-gem-sidebar {
+      width: 100%;
+      min-width: 0;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 18px;
+      padding: 8px 10px;
+    }
+
+    .workspace-gem-sidebar-top {
+      display: flex;
+      gap: 8px;
+    }
+
+    .workspace-gem-sidebar-brand {
+      display: block;
+      font-size: 1rem;
+      padding: 0;
+    }
+
+    .workspace-gem-sidebar-body {
+      display: none;
+    }
+
+    .workspace-gem-header h2 {
+      font-size: 1.2rem;
+    }
+
+    .workspace-gem-header-right {
+      position: static;
+    }
+
+    .workspace-gem-header {
+      justify-content: space-between;
+    }
+
+    .workspace-gem-input-footer {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+  }
+}
+
 @keyframes fade-up {
   from {
     opacity: 0;
