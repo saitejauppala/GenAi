@@ -3,8 +3,10 @@ import AIUsage from '../models/aiUsage';
 import User from '../models/user';
 
 const FREE_DAILY_LIMIT = parseInt(process.env.FREE_DAILY_LIMIT || '50', 10);
+const DISABLE_AI_QUOTA = String(process.env.DISABLE_AI_QUOTA || 'true').toLowerCase() === 'true';
 
 export async function enforceAiQuota(req: any, res: Response, next: NextFunction){
+  if (DISABLE_AI_QUOTA) return next();
   // expects req.user populated
   if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
   const user = await User.findById(req.user.id);

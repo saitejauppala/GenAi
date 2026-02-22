@@ -620,7 +620,8 @@ body {
 
 @layer components {
   .workspace-shell {
-    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
     overflow: hidden;
     padding: 10px;
   }
@@ -828,6 +829,10 @@ body {
   }
 
   .workspace-gem-composer {
+    position: sticky;
+    bottom: 0;
+    z-index: 12;
+    flex-shrink: 0;
     border-top: 1px solid var(--stroke);
     background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.56) 0%, rgba(255, 255, 255, 0.96) 32%),
