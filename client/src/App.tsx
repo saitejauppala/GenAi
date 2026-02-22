@@ -10,6 +10,8 @@ import AIChatPage from './pages/AIChatPage';
 import RecentChatsPage from './pages/RecentChatsPage';
 import ProjectsPage from './pages/ProjectsPage';
 import ProfilePage from './pages/ProfilePage';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function RequireAuth({ children }: { children: React.ReactElement }) {
   const token = localStorage.getItem('token');
@@ -25,6 +27,8 @@ function App() {
         <Route path="/chat" element={<AIChatPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route
           path="/recent"
           element={

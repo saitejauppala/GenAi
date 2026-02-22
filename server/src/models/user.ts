@@ -12,6 +12,8 @@ export interface IUser extends Document {
   plan: 'free' | 'premium';
   usage: { requests: number; lastReset: Date };
   disabled?: boolean;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
 }
 
 const UserSchema: Schema = new Schema({
@@ -28,7 +30,9 @@ const UserSchema: Schema = new Schema({
     requests: { type: Number, default: 0 },
     lastReset: { type: Date, default: Date.now }
   },
-  disabled: { type: Boolean, default: false }
+  disabled: { type: Boolean, default: false },
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date }
 }, { timestamps: true });
 
 export default mongoose.model<IUser>('User', UserSchema);

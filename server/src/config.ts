@@ -11,6 +11,13 @@ export const ollamaApiUrl = process.env.OLLAMA_API_URL || 'http://localhost:1143
 export const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2';
 export const maxPromptChars = parseInt(process.env.MAX_PROMPT_CHARS || '12000', 10);
 export const frontendOrigin = process.env.FRONTEND_ORIGIN || '*';
+export const appBaseUrl = process.env.APP_BASE_URL || 'http://localhost:5173';
+export const resetPasswordTokenExpiresMinutes = parseInt(
+  process.env.RESET_PASSWORD_TOKEN_EXPIRES_MINUTES || '30',
+  10
+);
+export const exposeResetTokenResponse =
+  String(process.env.EXPOSE_RESET_TOKEN_RESPONSE || 'true').toLowerCase() === 'true';
 export const projectsRootDir =
   process.env.PROJECTS_ROOT_DIR ||
   (process.env.NODE_ENV === 'production'

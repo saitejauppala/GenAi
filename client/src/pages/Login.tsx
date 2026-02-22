@@ -72,7 +72,15 @@ export default function Login() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium">Password</label>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <label className="block text-sm font-medium">Password</label>
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs font-semibold text-[var(--primary-strong)]"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
                 <input
                   type="password"
                   className="text-input"
