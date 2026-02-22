@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import User from '../models/user';
+import bcrypt from 'bcrypt';
 
 export async function getMyProfile(req: any, res: Response) {
   const user = await User.findById(req.user.id).select('-password');
@@ -32,4 +33,37 @@ export async function updateMyProfile(req: any, res: Response) {
   await user.save();
   const safe = await User.findById(user._id).select('-password');
   res.json(safe);
+}
+
+export async function updateMyPassword(req: any, res: Response) {
+  const user = await User.findById(req.user.id);
+  if (!user) return res.status(404).json({ message: 'Not found' });
+
+  const currentPassword = String(req.body?.currentPassword || '');
+  const newPassword = String(req.body?.newPassword || '');
+  const confirmPassword = String(req.body?.confirmPassword || '');
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return res.status(400).json({ message: 'All password fields are required' });
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ message: 'New password must be at least 8 characters' });
+  }
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ message: 'New password and confirm password do not match' });
+  }
+
+  const isCurrentValid = await bcrypt.compare(currentPassword, user.password);
+  if (!isCurrentValid) {
+    return res.status(400).json({ message: 'Current password is incorrect' });
+  }
+
+  const sameAsCurrent = await bcrypt.compare(newPassword, user.password);
+  if (sameAsCurrent) {
+    return res.status(400).json({ message: 'New password must be different from current password' });
+  }
+
+  user.password = await bcrypt.hash(newPassword, 10);
+  await user.save();
+  return res.json({ message: 'Password updated successfully' });
 }

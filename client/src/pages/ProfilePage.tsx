@@ -11,6 +11,12 @@ type ProfileForm = {
   avatarDataUrl: string;
 };
 
+type PasswordForm = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
+
 function toDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -33,6 +39,14 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [passwordForm, setPasswordForm] = useState<PasswordForm>({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   async function loadProfile() {
     setError('');
@@ -78,6 +92,26 @@ export default function ProfilePage() {
     }
   }
 
+  async function submitPassword(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPasswordSaving(true);
+    setPasswordError('');
+    setPasswordMessage('');
+    try {
+      const { data } = await api.put('/api/profile/password', passwordForm);
+      setPasswordMessage(data?.message || 'Password updated successfully.');
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+    } catch (err: any) {
+      setPasswordError(err?.response?.data?.message || 'Failed to update password.');
+    } finally {
+      setPasswordSaving(false);
+    }
+  }
+
   return (
     <WorkspaceLayout
       title="Profile"
@@ -91,96 +125,158 @@ export default function ProfilePage() {
             ))}
           </div>
         ) : (
-          <form onSubmit={submit} className="grid gap-4 lg:grid-cols-[220px_1fr]">
-            <div className="section-card flex flex-col items-center gap-3">
-              {form.avatarDataUrl ? (
-                <img
-                  src={form.avatarDataUrl}
-                  alt="Avatar"
-                  className="h-28 w-28 rounded-full border border-[var(--stroke)] object-cover"
-                />
-              ) : (
-                <div className="flex h-28 w-28 items-center justify-center rounded-full border border-dashed border-[var(--stroke)] text-sm muted">
-                  No Avatar
-                </div>
-              )}
-              <label className="btn-secondary w-full cursor-pointer text-center">
-                Upload Avatar
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    const dataUrl = await toDataUrl(file);
-                    setForm((prev) => ({ ...prev, avatarDataUrl: dataUrl }));
-                  }}
-                />
-              </label>
-            </div>
-
-            <div className="section-card space-y-3">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Name</label>
+          <div className="space-y-4">
+            <form onSubmit={submit} className="grid gap-4 lg:grid-cols-[220px_1fr]">
+              <div className="section-card flex flex-col items-center gap-3">
+                {form.avatarDataUrl ? (
+                  <img
+                    src={form.avatarDataUrl}
+                    alt="Avatar"
+                    className="h-28 w-28 rounded-full border border-[var(--stroke)] object-cover"
+                  />
+                ) : (
+                  <div className="flex h-28 w-28 items-center justify-center rounded-full border border-dashed border-[var(--stroke)] text-sm muted">
+                    No Avatar
+                  </div>
+                )}
+                <label className="btn-secondary w-full cursor-pointer text-center">
+                  Upload Avatar
                   <input
-                    value={form.name}
-                    onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const dataUrl = await toDataUrl(file);
+                      setForm((prev) => ({ ...prev, avatarDataUrl: dataUrl }));
+                    }}
+                  />
+                </label>
+              </div>
+
+              <div className="section-card space-y-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Name</label>
+                    <input
+                      value={form.name}
+                      onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                      className="text-input"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Email</label>
+                    <input value={form.email} className="text-input" readOnly />
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Title</label>
+                    <input
+                      value={form.title}
+                      onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+                      className="text-input"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Location</label>
+                    <input
+                      value={form.location}
+                      onChange={(e) => setForm((prev) => ({ ...prev, location: e.target.value }))}
+                      className="text-input"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Bio</label>
+                  <textarea
+                    value={form.bio}
+                    onChange={(e) => setForm((prev) => ({ ...prev, bio: e.target.value }))}
+                    className="text-input min-h-[140px]"
+                  />
+                </div>
+
+                {error ? (
+                  <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    {error}
+                  </p>
+                ) : null}
+
+                {message ? (
+                  <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                    {message}
+                  </p>
+                ) : null}
+
+                <button className="btn-primary w-full sm:w-auto" disabled={saving}>
+                  {saving ? 'Saving...' : 'Save Profile'}
+                </button>
+              </div>
+            </form>
+
+            <form onSubmit={submitPassword} className="section-card space-y-3">
+              <h3 className="text-lg font-semibold">Update Password</h3>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Current Password</label>
+                  <input
+                    type="password"
+                    value={passwordForm.currentPassword}
+                    onChange={(e) =>
+                      setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))
+                    }
                     className="text-input"
+                    required
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Email</label>
-                  <input value={form.email} className="text-input" readOnly />
-                </div>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Title</label>
+                  <label className="mb-1 block text-sm font-medium">New Password</label>
                   <input
-                    value={form.title}
-                    onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+                    type="password"
+                    value={passwordForm.newPassword}
+                    onChange={(e) =>
+                      setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))
+                    }
                     className="text-input"
+                    required
+                    minLength={8}
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Location</label>
+                  <label className="mb-1 block text-sm font-medium">Confirm Password</label>
                   <input
-                    value={form.location}
-                    onChange={(e) => setForm((prev) => ({ ...prev, location: e.target.value }))}
+                    type="password"
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) =>
+                      setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))
+                    }
                     className="text-input"
+                    required
+                    minLength={8}
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium">Bio</label>
-                <textarea
-                  value={form.bio}
-                  onChange={(e) => setForm((prev) => ({ ...prev, bio: e.target.value }))}
-                  className="text-input min-h-[140px]"
-                />
-              </div>
-
-              {error ? (
+              {passwordError ? (
                 <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                  {error}
+                  {passwordError}
                 </p>
               ) : null}
 
-              {message ? (
+              {passwordMessage ? (
                 <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                  {message}
+                  {passwordMessage}
                 </p>
               ) : null}
 
-              <button className="btn-primary w-full sm:w-auto" disabled={saving}>
-                {saving ? 'Saving...' : 'Save Profile'}
+              <button className="btn-primary w-full sm:w-auto" disabled={passwordSaving}>
+                {passwordSaving ? 'Updating...' : 'Update Password'}
               </button>
-            </div>
-          </form>
+            </form>
+          </div>
         )}
       </section>
     </WorkspaceLayout>

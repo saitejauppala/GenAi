@@ -648,6 +648,14 @@ body {
     overflow: hidden;
   }
 
+  .neon-sidebar {
+    border-color: rgba(84, 160, 255, 0.38);
+    box-shadow:
+      0 0 0 1px rgba(84, 160, 255, 0.16),
+      0 0 28px -12px rgba(89, 202, 255, 0.75),
+      var(--shadow-soft);
+  }
+
   .workspace-gem-sidebar.collapsed {
     width: 72px;
     min-width: 72px;
@@ -668,6 +676,69 @@ body {
     color: var(--primary-strong);
     font-weight: 600;
     transition: all 0.18s ease;
+  }
+
+  .neon-btn {
+    border-color: rgba(89, 202, 255, 0.35);
+    box-shadow: inset 0 0 0 1px rgba(84, 160, 255, 0.14);
+  }
+
+  .workspace-side-icons {
+    display: grid;
+    gap: 8px;
+  }
+
+  .workspace-side-icon {
+    width: 100%;
+    border: 1px solid var(--stroke);
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--primary-strong);
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.18s ease;
+  }
+
+  .workspace-side-icon svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    flex-shrink: 0;
+  }
+
+  .workspace-side-icon:hover {
+    border-color: rgba(89, 202, 255, 0.55);
+    color: #0d8dc7;
+    box-shadow: 0 0 20px -14px rgba(89, 202, 255, 0.9);
+  }
+
+  .workspace-gem-sidebar.collapsed .workspace-side-icon {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .workspace-recent-title {
+    position: relative;
+    padding-left: 12px;
+  }
+
+  .workspace-recent-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #41d6ff;
+    box-shadow: 0 0 10px rgba(65, 214, 255, 0.95);
   }
 
   .workspace-rail-btn:hover {
@@ -731,6 +802,7 @@ body {
   .workspace-gem-recent-item:hover {
     transform: translateY(-1px);
     border-color: rgba(51, 100, 255, 0.38);
+    box-shadow: 0 0 22px -18px rgba(65, 214, 255, 0.9);
   }
 
   .workspace-gem-main {
