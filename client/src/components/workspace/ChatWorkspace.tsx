@@ -1,16 +1,15 @@
-import React from 'react';
-import { WorkspaceMessage } from '../../context/WorkspaceContext';
-import ProjectToolbar from './ProjectToolbar';
+import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import RichMessage from './RichMessage';
 
-type Project = {
-  _id: string;
-  name: string;
+type WorkspaceMessage = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  meta?: string;
 };
 
 type ChatWorkspaceProps = {
-  projects: Project[];
-  activeProjectId: string;
-  activeProjectName: string;
   filesPanelOpen: boolean;
   messages: WorkspaceMessage[];
   prompt: string;
@@ -18,34 +17,36 @@ type ChatWorkspaceProps = {
   healthStatus: 'ONLINE' | 'OFFLINE' | 'UNKNOWN';
   healthMessage: string;
   isAuthenticated: boolean;
-  onProjectSelect: (projectId: string) => void;
-  onCreateProject: () => void;
-  onDownloadProject: () => void;
   onToggleFilesPanel: () => void;
   onPromptChange: (value: string) => void;
   onSendPrompt: () => void;
-  onSaveMessageToProject: (message: WorkspaceMessage) => void;
-  onSaveLatestToProject: () => void;
+  onCopyMessage: (message: WorkspaceMessage) => void;
 };
 
 export default function ChatWorkspace(props: ChatWorkspaceProps) {
+  const statusClass = useMemo(() => {
+    if (props.healthStatus === 'ONLINE') return 'online';
+    if (props.healthStatus === 'OFFLINE') return 'offline';
+    return 'unknown';
+  }, [props.healthStatus]);
+
   return (
     <section className="workspace-column workspace-chat-column">
-      <div className="workspace-toolbar-sticky">
-        <ProjectToolbar
-          projects={props.projects}
-          activeProjectId={props.activeProjectId}
-          activeProjectName={props.activeProjectName}
-          filesPanelOpen={props.filesPanelOpen}
-          onProjectSelect={props.onProjectSelect}
-          onCreateProject={props.onCreateProject}
-          onDownloadProject={props.onDownloadProject}
-          onToggleFilesPanel={props.onToggleFilesPanel}
-        />
-      </div>
+      <header className="workspace-chat-topbar">
+        <div>
+          <p className="workspace-brand-label">DevAI Assistant</p>
+          <h2 className="workspace-brand-title">Conversation Workspace</h2>
+        </div>
+        <div className="workspace-chat-topbar-actions">
+          <span className={`workspace-health-chip ${statusClass}`}>{props.healthStatus}</span>
+          <button className="btn-secondary" type="button" onClick={props.onToggleFilesPanel}>
+            {props.filesPanelOpen ? 'Hide Files' : 'Show Files'}
+          </button>
+        </div>
+      </header>
 
       {props.healthStatus === 'OFFLINE' ? (
-        <div className="workspace-alert rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="workspace-alert rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
           AI Server Offline: {props.healthMessage}
         </div>
       ) : null}
@@ -57,27 +58,28 @@ export default function ChatWorkspace(props: ChatWorkspaceProps) {
               <article
                 key={message.id}
                 className={`workspace-chat-bubble ${
-                  message.role === 'user'
-                    ? 'ml-auto bg-[var(--primary)] text-white'
-                    : 'border border-[var(--stroke)] bg-white/90'
+                  message.role === 'user' ? 'workspace-user-bubble' : 'workspace-assistant-bubble'
                 }`}
               >
-                <p className="whitespace-pre-wrap text-sm leading-6">{message.content}</p>
+                <RichMessage content={message.content} />
                 {message.meta ? <p className="muted mt-2 text-xs">{message.meta}</p> : null}
-                {message.role === 'assistant' && props.isAuthenticated ? (
+                {message.role === 'assistant' ? (
                   <button
-                    className="btn-secondary mt-3 w-full"
-                    onClick={() => props.onSaveMessageToProject(message)}
+                    className="workspace-copy-btn mt-3"
+                    type="button"
+                    onClick={() => props.onCopyMessage(message)}
                   >
-                    Save to Project
+                    Copy Response
                   </button>
                 ) : null}
               </article>
             ))}
 
             {props.sending ? (
-              <div className="workspace-typing-indicator w-fit rounded-xl border border-[var(--stroke)] bg-white px-3 py-2 text-sm">
-                AI is typing...
+              <div className="workspace-typing-indicator">
+                <span className="workspace-dot" />
+                <span className="workspace-dot" />
+                <span className="workspace-dot" />
               </div>
             ) : null}
           </div>
@@ -91,23 +93,33 @@ export default function ChatWorkspace(props: ChatWorkspaceProps) {
           }}
         >
           <div className="workspace-chat-composer-inner">
-            <input
+            <textarea
               value={props.prompt}
               onChange={(e) => props.onPromptChange(e.target.value)}
-              placeholder="Ask AI to generate code, docs, or files..."
-              className="text-input flex-1"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  props.onSendPrompt();
+                }
+              }}
+              placeholder="Describe the app, feature, or file you want to generate..."
+              className="workspace-prompt-input"
               disabled={props.sending}
+              rows={3}
             />
             <div className="workspace-chat-composer-actions">
+              {!props.isAuthenticated ? (
+                <p className="muted text-xs sm:text-sm">
+                  Guest mode enabled.{' '}
+                  <Link to="/login" className="font-semibold text-[var(--primary)]">
+                    Login for full generation
+                  </Link>
+                </p>
+              ) : (
+                <p className="muted text-xs sm:text-sm">Shift+Enter for new line. Enter to send.</p>
+              )}
               <button className="btn-primary min-w-[140px]" disabled={props.sending || !props.prompt.trim()}>
-                Send Prompt
-              </button>
-              <button
-                type="button"
-                className="btn-secondary min-w-[140px]"
-                onClick={props.onSaveLatestToProject}
-              >
-                Save to Project
+                {props.sending ? 'Generating...' : 'Send'}
               </button>
             </div>
           </div>
