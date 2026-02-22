@@ -15,18 +15,18 @@ const MONGO =
 const PORT = process.env.PORT || 4000;
 
 if (!MONGO) {
-  logger.error('Missing MongoDB connection string. Set MONGO_URI (or MONGODB_URI).');
-  process.exit(1);
+  throw new Error('Missing MongoDB connection string. Set MONGO_URI (or MONGODB_URI).');
 }
 
-mongoose.connect(MONGO)
-  .then(async () => {
+async function start() {
+  await mongoose.connect(MONGO);
     logger.info('Connected to MongoDB');
     await ensureSuperAdmin();
     startOllamaHealthMonitor();
     app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
-  })
-  .catch(err => {
-    logger.error('Mongo connection error', err);
-    process.exit(1);
-  });
+}
+
+start().catch((err) => {
+  logger.error('Startup error', err);
+  process.exitCode = 1;
+});
