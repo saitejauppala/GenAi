@@ -741,7 +741,8 @@ body {
     background: var(--surface);
     box-shadow: var(--shadow-soft);
     display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    position: relative;
   }
 
   .workspace-gem-header {
@@ -768,7 +769,7 @@ body {
   .workspace-gem-thread {
     min-height: 0;
     overflow-y: auto;
-    padding: 6px 0 14px;
+    padding: 6px 0 220px;
   }
 
   .workspace-gem-thread-inner {
@@ -829,21 +830,18 @@ body {
   }
 
   .workspace-gem-composer {
-    position: sticky;
-    bottom: 0;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: clamp(22px, 4vh, 52px);
     z-index: 12;
     flex-shrink: 0;
-    border-top: 1px solid var(--stroke);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.56) 0%, rgba(255, 255, 255, 0.96) 32%),
-      var(--surface-strong);
-    padding: 12px 16px 14px;
+    padding: 0 16px;
+    background: transparent;
   }
 
   [data-theme='dark'] .workspace-gem-composer {
-    background:
-      linear-gradient(180deg, rgba(13, 22, 42, 0.56) 0%, rgba(13, 22, 42, 0.95) 32%),
-      var(--surface-strong);
+    background: transparent;
   }
 
   .workspace-gem-input-shell {
@@ -943,6 +941,10 @@ body {
     .workspace-gem-thread-inner {
       padding: 0 12px 8px;
     }
+
+    .workspace-gem-thread {
+      padding-bottom: 210px;
+    }
   }
 
   @media (max-width: 768px) {
@@ -991,6 +993,15 @@ body {
       flex-direction: column;
       align-items: stretch;
       gap: 8px;
+    }
+
+    .workspace-gem-composer {
+      bottom: 14px;
+      padding: 0 10px;
+    }
+
+    .workspace-gem-thread {
+      padding-bottom: 228px;
     }
   }
 }
